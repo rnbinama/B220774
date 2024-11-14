@@ -1,29 +1,40 @@
 ---
-title: "Assessment"
-output: html_document
+title: "The impact of poor mental health on heart disease mortality in Scotland"
+subtitle: Natalie Binama; B220774
+output: 
+  html_document: 
+    number_sections: true
 date: "2024-11-01"
+image: ![Heart](C:\Users\natal\Desktop\4th Year Data Science\Assessment\B220774\Heart_gif.gif)
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-## R Markdown
+## Introduction
 
-This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+The recent 2022 census revealed that Mental Health conditions in Scotland have worsened by 50% since 2011. This not only impacts mental well-being but physical too. The rising rate of Heart disease caused deaths in Scotland has changed recently following a successful decrease from 1978 to 2015. By focusing on antidepressant prescriptions as an indication of poor mental health and increased depression rates, this assessment aims to visualize the trend of heart disease deaths and increased depression. Note, antidepressant data represents the winter months of these as SAD rates are greatest during these periods.
 
-When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
-
-```{r cars}
-# summary(cars)
+# Loading All Packages
+```{r}
+library(tidyverse) library(janitor) library(gt) library(here) library(kableExtra) library(dplyr) library(readxl)
 ```
 
-## Including Plots
 
-You can also embed plots, for example:
 
-```{r pressure, echo=FALSE}
-plot(pressure)
+## Total Heart Disease Deaths Over the Last Decade
+
+*Age and sex adjusted death rates per 100,000 population2* 
+
+
+```{r Total_HD_Deaths, echo=TRUE}
+
+
+
+
+
+
 ```
 
 Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.

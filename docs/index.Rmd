@@ -11,7 +11,11 @@ image: C:/Users/natal/Desktop/4th Year Data Science/Assessment/B220774/Heart_gif
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE)
+knitr::opts_chunk$set(
+	message = FALSE,
+	warning = FALSE,
+	include = FALSE
+)
 ```
 
 
@@ -22,7 +26,7 @@ The recent 2022 census revealed that Mental Health conditions in Scotland have w
 ## SSRI Winter Prescription Trends in Scotland
 
 Load all packages
-```{r Libraries, echo=TRUE}
+```{r Libraries, include=FALSE}
 library(tidyverse)  
 library(janitor) 
 library(gt) 
@@ -34,7 +38,7 @@ library(patchwork)
 ```
 
 *Data Summary, winter months and why, regional demographics and why*
-```{r combined_chunk, Echo=FALSE}
+```{r combined_chunk, Echo=FALSE, include=FALSE}
 # Combining results by winter months for production in the table ig 
 #I did this because I want to filter for this
 
@@ -84,7 +88,7 @@ Combined22 <- c(
 all_urls <- c(Combined16, Combined17, Combined18, Combined19, Combined20, Combined21, Combined22)
 ```
 
-```{r SSRI_function, Echo=FALSE}
+```{r SSRI_function, Echo=FALSE, include=FALSE}
 
 # This is a function created to extract the year and create a column from it
 read_and_process <- function(url) {
@@ -105,12 +109,12 @@ read_and_process <- function(url) {
 
 
 
-```{r Depression_data, Echo = FALSE}
+```{r Depression_data, echo=FALSE}
+
 #This now uses the map_dfr thing to read all the urls and apply the process function so it can occur to all variables
 
 combined_data <- map_dfr(all_urls, read_and_process)
 combined_data
-
 
 # This is used to prepare the plot, unite is used because in the earlier datasets the HBTs are known as 
 # Oooh but at some point I have to change them to healthboard names Chai
@@ -124,10 +128,9 @@ p3 <- combined_plot_prep %>%
   summarise(total_quantity = sum(PaidQuantity, na.rm = TRUE)) %>%
   ggplot(aes(x = year, y = total_quantity, group = 1))+
   geom_line()+
-  scale_y_continuous(labels = scales::comma)+ # To ensure the x axis y asomething and its important 
+  scale_y_continuous(labels = scales::comma)+ # To ensure the x axis y a something and its important 
   geom_point()
 
-p3
 
 
 combined_data1 <- combined_data %>% 
@@ -158,9 +161,9 @@ p4 <- joined_combined_plot_prep %>%
   theme_minimal()
   
 
-p4
+p3
 
-p3 + p4
+p4
 
 ```
 *End summary n conclusion, particular healthboards*
@@ -169,7 +172,7 @@ p3 + p4
 
 *Age and sex adjusted death rates per 100,000 population2* 
 
-```{r, Total_HD_Deaths, echo=TRUE}
+```{r echo=FALSE, Total_HD_Deaths, echo=FALSE}
 # The first step is to read in the csv file from the Public Health Scotland Website and using the clean_names function to make its succinct. I have opted for using hyperlinks as this more efficient for my interface.
 # I want to see the general overview and filtering of the data 
 Heart_disease_mortality <- read_csv("https://www.opendata.nhs.scot/dataset/0e17f3fc-9429-48aa-b1ba-2b7e55688253/resource/dc0512a8-eb49-43b9-84f1-17ef95365d57/download/hd_mortalitybyhbr.csv") %>% 
@@ -189,8 +192,6 @@ p1 <- filtered_HD_total %>%
   geom_point() +
   scale_x_continuous(breaks = function(x) seq(floor(min(x)), ceiling(max(x)), by = 1))+
   labs(title = "Total Heart Disease Deaths Per Year in Scotland", x = "Year", y = "Total Deaths")
-
-p1
 
 
 Heart_disease_mortality1 <- read_csv("https://www.opendata.nhs.scot/dataset/0e17f3fc-9429-48aa-b1ba-2b7e55688253/resource/dc0512a8-eb49-43b9-84f1-17ef95365d57/download/hd_mortalitybyhbr.csv") %>% 
@@ -214,9 +215,9 @@ p2 <- filtered_HD_total1 %>%
   scale_x_continuous(breaks = function(x) seq(floor(min(x)), ceiling(max(x)), by = 1))+
   labs(title = "Total Heart Disease Deaths Per Year in Scotland", x = "Year", y = "Total Deaths")
 
-p2
 
-p1 + p2
+p1
+p2
 
 
 ```

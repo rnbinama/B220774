@@ -1,46 +1,227 @@
 ---
-title: "The impact of poor mental health on heart disease mortality in Scotland"
+title: 'Exploring Declining Mental Health and Heart Disease Mortality in Scotland:
+  Insights from SSRI Prescription Trends'
 subtitle: Natalie Binama; B220774
-output: 
-  html_document: 
-    number_sections: true
 date: "2024-11-01"
-image: ![Heart](C:\Users\natal\Desktop\4th Year Data Science\Assessment\B220774\Heart_gif.gif)
+output:
+  html_document:
+    number_sections: true
+  pdf_document: default
+image: C:/Users/natal/Desktop/4th Year Data Science/Assessment/B220774/Heart_gif.gif)
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE)
 ```
+
 
 ## Introduction
 
-The recent 2022 census revealed that Mental Health conditions in Scotland have worsened by 50% since 2011. This not only impacts mental well-being but physical too. The rising rate of Heart disease caused deaths in Scotland has changed recently following a successful decrease from 1978 to 2015. By focusing on antidepressant prescriptions as an indication of poor mental health and increased depression rates, this assessment aims to visualize the trend of heart disease deaths and increased depression. Note, antidepressant data represents the winter months of these as SAD rates are greatest during these periods.
+The recent 2022 census revealed that Mental Health conditions in Scotland have worsened by 50% since 2011. This not only impacts mental well-being but physical too. The rising rate of Heart disease caused deaths in Scotland has changed recently following a successful decrease from 1978 to 2015. By focusing on antidepressant prescriptions as an indication of poor mental health and increased depression rates, this assessment aims to visualize the trend of heart disease deaths and increased depression. Note, antidepressant data represents the winter months of these as SAD rates are greatest during these periods. Descriptive visualization of data
 
-# Loading All Packages
-```{r}
-library(tidyverse) library(janitor) library(gt) library(here) library(kableExtra) library(dplyr) library(readxl)
+## SSRI Winter Prescription Trends in Scotland
+
+Load all packages
+```{r Libraries, echo=TRUE}
+library(tidyverse)  
+library(janitor) 
+library(gt) 
+library(here) 
+library(kableExtra) 
+library(dplyr) 
+library(readxl) 
+library(patchwork)
+```
+
+*Data Summary, winter months and why, regional demographics and why*
+```{r combined_chunk, Echo=FALSE}
+# Combining results by winter months for production in the table ig 
+#I did this because I want to filter for this
+
+Combined16 <- c(
+  "https://www.opendata.nhs.scot/dataset/84393984-14e9-4b0d-a797-b288db64d088/resource/7c487db9-f450-4319-8b18-4b825380692b/download/pitc201601.csv",
+  "https://www.opendata.nhs.scot/dataset/84393984-14e9-4b0d-a797-b288db64d088/resource/0727befa-5530-4c1d-aff0-ccb7554eff7a/download/pitc201602.csv",
+  "https://www.opendata.nhs.scot/dataset/84393984-14e9-4b0d-a797-b288db64d088/resource/597ea4bc-f733-45b6-8a60-5d7a6ac4824c/download/pitc201612.csv"
+  )
+
+Combined17 <- c(
+  "https://www.opendata.nhs.scot/dataset/84393984-14e9-4b0d-a797-b288db64d088/resource/3def845e-c830-4b73-8e02-e42adcde5afa/download/pitc201701.csv",
+  "https://www.opendata.nhs.scot/dataset/84393984-14e9-4b0d-a797-b288db64d088/resource/f7a00faf-49ec-4a99-9686-e52b2d1572c4/download/pitc201702.csv",
+  "https://www.opendata.nhs.scot/dataset/84393984-14e9-4b0d-a797-b288db64d088/resource/a39b254a-ab6a-41d5-a920-5ff34bdb9f6b/download/pitc201712.csv"
+  )
+
+Combined18 <- c(
+  "https://www.opendata.nhs.scot/dataset/84393984-14e9-4b0d-a797-b288db64d088/resource/82ef2c55-5a31-4759-ab9a-83b176e107f2/download/pitc201801.csv",
+  "https://www.opendata.nhs.scot/dataset/84393984-14e9-4b0d-a797-b288db64d088/resource/1ae16a5f-aa26-4911-989b-ba4a6ab87037/download/pitc201802.csv",
+  "https://www.opendata.nhs.scot/dataset/84393984-14e9-4b0d-a797-b288db64d088/resource/c50ed972-34e8-4cd6-8d2e-349e875c3ffa/download/pitc201812.csv"
+  )
+
+Combined19 <- c(
+  "https://www.opendata.nhs.scot/dataset/84393984-14e9-4b0d-a797-b288db64d088/resource/3bd6e3cc-b8b7-493b-b6aa-f9fcadbb05d2/download/pitc201901.csv",
+  "https://www.opendata.nhs.scot/dataset/84393984-14e9-4b0d-a797-b288db64d088/resource/3729a5c8-787a-46e3-ab7d-feed9aa91b4e/download/pitc201902.csv",
+  "https://www.opendata.nhs.scot/dataset/84393984-14e9-4b0d-a797-b288db64d088/resource/fa276ad2-669a-472f-9c47-809f199fae21/download/pitc201912.csv"
+  )
+
+Combined20 <- c(
+  "https://www.opendata.nhs.scot/dataset/84393984-14e9-4b0d-a797-b288db64d088/resource/e5c841f2-3e16-428b-97db-0798ec7a5fb4/download/pitc202001.csv",
+  "https://www.opendata.nhs.scot/dataset/84393984-14e9-4b0d-a797-b288db64d088/resource/af121e7c-4124-4955-92e9-a9580ccd469e/download/pitc202002.csv",
+  "https://www.opendata.nhs.scot/dataset/84393984-14e9-4b0d-a797-b288db64d088/resource/0c033702-4d88-4f2d-989c-a709b1f4529e/download/pitc202012.csv"
+  )
+
+Combined21 <- c(
+  "https://www.opendata.nhs.scot/dataset/84393984-14e9-4b0d-a797-b288db64d088/resource/7722a6e6-a6b6-49ec-aa63-fdc4bc727f05/download/pitc202101.csv",
+  "https://www.opendata.nhs.scot/dataset/84393984-14e9-4b0d-a797-b288db64d088/resource/3f5c55ac-1bcd-4c57-a7b6-12911f15239c/download/pitc202102.csv",
+  "https://www.opendata.nhs.scot/dataset/84393984-14e9-4b0d-a797-b288db64d088/resource/ad9e7b46-47fb-4d42-baad-f8e98e8f5936/download/pitc202112.csv"
+  )
+
+Combined22 <- c(
+  "https://www.opendata.nhs.scot/dataset/84393984-14e9-4b0d-a797-b288db64d088/resource/53a53d61-3b3b-4a12-888b-a788ce13db9c/download/pitc202201.csv",
+  "https://www.opendata.nhs.scot/dataset/84393984-14e9-4b0d-a797-b288db64d088/resource/bd7aa5c9-d708-4d0b-9b28-a9d822c84e34/download/pitc202202.csv",
+  "https://www.opendata.nhs.scot/dataset/84393984-14e9-4b0d-a797-b288db64d088/resource/00213ffa-941e-4389-9e6f-3bca8067da8c/download/pitc202212.csv"
+  )
+
+#Combining all the dataframes
+all_urls <- c(Combined16, Combined17, Combined18, Combined19, Combined20, Combined21, Combined22)
+```
+
+```{r SSRI_function, Echo=FALSE}
+
+# This is a function created to extract the year and create a column from it
+read_and_process <- function(url) {
+  df <- read_csv(url)
+  year <- str_extract(basename(url), "\\d{4}")
+  if ("bnf_item_description" %in% names(df)) {
+    col_name <- "bnf_item_description"
+  } else if ("BNFItemDescription" %in% names(df)) {
+    col_name <- "BNFItemDescription"
+  } else {
+    stop("Neither 'bnf_item_description' nor 'BNFItemDescription' found in the data")
+  }
+  df %>%
+    filter(str_detect(BNFItemDescription, "FLUOXE|SERTRALINE|CITALOPRAM")) %>%
+    mutate(year = year)
+}
 ```
 
 
+
+```{r Depression_data, Echo = FALSE}
+#This now uses the map_dfr thing to read all the urls and apply the process function so it can occur to all variables
+
+combined_data <- map_dfr(all_urls, read_and_process)
+combined_data
+
+
+# This is used to prepare the plot, unite is used because in the earlier datasets the HBTs are known as 
+# Oooh but at some point I have to change them to healthboard names Chai
+
+combined_plot_prep <- combined_data %>% 
+  unite(HBTNEW, HBT2014, HBT) %>% 
+  select(HBTNEW, BNFItemDescription, PaidQuantity, year) # Selecting for this because 
+
+p3 <- combined_plot_prep %>% 
+  group_by(year) %>% 
+  summarise(total_quantity = sum(PaidQuantity, na.rm = TRUE)) %>%
+  ggplot(aes(x = year, y = total_quantity, group = 1))+
+  geom_line()+
+  scale_y_continuous(labels = scales::comma)+ # To ensure the x axis y asomething and its important 
+  geom_point()
+
+p3
+
+
+combined_data1 <- combined_data %>% 
+  mutate(HB = coalesce(HBT2014, HBT)) %>%  # Create 'hb' from HBT2014 or hbt
+  select(-HBT2014, -HBT)
+
+healthboard_names_data <- read_csv("https://www.opendata.nhs.scot/dataset/9f942fdb-e59e-44f5-b534-d6e17229cc7b/resource/652ff726-e676-4a20-abda-435b98dd7bdc/download/hb14_hb19.csv") %>% 
+  clean_names()
+
+
+joined_combined_data1 <- full_join(combined_data1, healthboard_names_data, by = c("HB" = "hb"))
+
+joined_combined_plot_prep <- joined_combined_data1 %>% 
+  select(hb_name, BNFItemDescription, PaidQuantity, year) %>% 
+  filter(!is.na(hb_name))
+
+p4 <- joined_combined_plot_prep %>% 
+  group_by(year, hb_name) %>% 
+  summarise(total_quantity = sum(PaidQuantity, na.rm = TRUE), .groups = "drop") %>%
+  ggplot(aes(x = year, y = total_quantity, group = hb_name, colour = hb_name))+
+  geom_line()+
+  geom_point()+
+  scale_y_continuous(labels = scales::comma)+
+  labs(title = "SSRI Quantity by Health Board 2016-2022",
+       x = "Year",
+       y = "Combined Quantity",
+       colour = "Health Board")+
+  theme_minimal()
+  
+
+p4
+
+p3 + p4
+
+```
+*End summary n conclusion, particular healthboards*
 
 ## Total Heart Disease Deaths Over the Last Decade
 
 *Age and sex adjusted death rates per 100,000 population2* 
 
+```{r, Total_HD_Deaths, echo=TRUE}
+# The first step is to read in the csv file from the Public Health Scotland Website and using the clean_names function to make its succinct. I have opted for using hyperlinks as this more efficient for my interface.
+# I want to see the general overview and filtering of the data 
+Heart_disease_mortality <- read_csv("https://www.opendata.nhs.scot/dataset/0e17f3fc-9429-48aa-b1ba-2b7e55688253/resource/dc0512a8-eb49-43b9-84f1-17ef95365d57/download/hd_mortalitybyhbr.csv") %>% 
+  clean_names()
 
-```{r Total_HD_Deaths, echo=TRUE}
+# Next, the data is filtered and renamed. I have selected years and dates
+filtered_HD_total <- Heart_disease_mortality %>% 
+  select(year, hbr, number_of_deaths) %>% 
+  filter(!is.na(number_of_deaths)) %>% 
+  group_by(year) %>%
+  summarise(total_deaths = sum(number_of_deaths))
+
+# This creates something
+p1 <- filtered_HD_total %>% 
+  ggplot(aes(x=year, y=total_deaths))+
+  geom_line()+
+  geom_point() +
+  scale_x_continuous(breaks = function(x) seq(floor(min(x)), ceiling(max(x)), by = 1))+
+  labs(title = "Total Heart Disease Deaths Per Year in Scotland", x = "Year", y = "Total Deaths")
+
+p1
+
+
+Heart_disease_mortality1 <- read_csv("https://www.opendata.nhs.scot/dataset/0e17f3fc-9429-48aa-b1ba-2b7e55688253/resource/dc0512a8-eb49-43b9-84f1-17ef95365d57/download/hd_mortalitybyhbr.csv") %>% 
+  clean_names()
+
+HD_with_names <- full_join(Heart_disease_mortality1, healthboard_names_data, by = c("hbr" = "hb")) %>% 
+  filter(!is.na(hb_name))
+
+filtered_HD_total1 <- HD_with_names %>% 
+  select(year, hb_name, number_of_deaths) %>% 
+  filter(!is.na(number_of_deaths)) %>% 
+  group_by(year, hb_name) %>%
+  summarise(total_deaths = sum(number_of_deaths))
 
 
 
+p2 <- filtered_HD_total1 %>% 
+  ggplot(aes(x=year, y=total_deaths, group=hb_name, colour=hb_name))+
+  geom_line()+
+  geom_point() +
+  scale_x_continuous(breaks = function(x) seq(floor(min(x)), ceiling(max(x)), by = 1))+
+  labs(title = "Total Heart Disease Deaths Per Year in Scotland", x = "Year", y = "Total Deaths")
 
+p2
+
+p1 + p2
 
 
 ```
 
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
 
-```{python}
-y = 'Hello Nat'
-print(y)
-```
+
+
 

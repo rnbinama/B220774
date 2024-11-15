@@ -109,7 +109,7 @@ read_and_process <- function(url) {
 
 
 
-```{r Depression_data, echo=FALSE}
+```{r Depression_data, echo=FALSE, include=TRUE}
 
 #This now uses the map_dfr thing to read all the urls and apply the process function so it can occur to all variables
 
@@ -172,7 +172,7 @@ p4
 
 *Age and sex adjusted death rates per 100,000 population2* 
 
-```{r echo=FALSE, Total_HD_Deaths, echo=FALSE}
+```{r echo=FALSE, Total_HD_Deaths, echo=FALSE, include=TRUE}
 # The first step is to read in the csv file from the Public Health Scotland Website and using the clean_names function to make its succinct. I have opted for using hyperlinks as this more efficient for my interface.
 # I want to see the general overview and filtering of the data 
 Heart_disease_mortality <- read_csv("https://www.opendata.nhs.scot/dataset/0e17f3fc-9429-48aa-b1ba-2b7e55688253/resource/dc0512a8-eb49-43b9-84f1-17ef95365d57/download/hd_mortalitybyhbr.csv") %>% 

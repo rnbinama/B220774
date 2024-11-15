@@ -1,8 +1,8 @@
 ---
 title: 'Exploring Declining Mental Health and Heart Disease Mortality in Scotland:
   Insights from SSRI Prescription Trends'
-subtitle: Natalie Binama; B220774
-date: "2024-11-01"
+subtitle: B220774
+date: "Today"
 output:
   html_document:
     number_sections: true
@@ -20,10 +20,15 @@ knitr::opts_chunk$set(
 
 
 ## Introduction
+Mental health and cardiovascular disease are two of the most pressing public health challenges facing Scotland today, with the recent 2022 census revealing that Mental Health conditions have worsened since 2011. The intricate relationship between these conditions is well-documented, with mental health disorders such as depression and anxiety often acting as both risk factors for and consequences of heart disease. Selective serotonin reuptake inhibitors (SSRIs), widely prescribed for the treatment of mental health disorders, offer valuable insights into trends in mental health management. Meanwhile, heart disease mortality rates provide a way to examine the broader impacts of mental and physical health on public health outcomes.
 
-The recent 2022 census revealed that Mental Health conditions in Scotland have worsened by 50% since 2011. This not only impacts mental well-being but physical too. The rising rate of Heart disease caused deaths in Scotland has changed recently following a successful decrease from 1978 to 2015. By focusing on antidepressant prescriptions as an indication of poor mental health and increased depression rates, this assessment aims to visualize the trend of heart disease deaths and increased depression. Note, antidepressant data represents the winter months of these as SAD rates are greatest during these periods. Descriptive visualization of data
+This assessment explores the intersection of mental health and heart disease mortality in Scotland by visualizing combined trends in SSRI prescriptions for fluoxetine, sertraline, and citalopram. It highlights how mental health and heart disease evolve over time, noting that higher SSRI use in areas of greater socioeconomic deprivation may align with increased heart disease mortality.
 
-## SSRI Winter Prescription Trends in Scotland
+Without conducting analysis, this report presents a cohesive and detailed overview of the data, offering foundation for future exploration of these critical public health issues.
+
+
+## SSRI Prescription Trends in Scotland
+The SSRI data represents winter months JAN,FEB,DEC (I may change this though because usage isnt actually highest in the winter as presumed previously)
 
 Load all packages
 ```{r Libraries, include=FALSE}
@@ -37,7 +42,7 @@ library(readxl)
 library(patchwork)
 ```
 
-*Data Summary, winter months and why, regional demographics and why*
+*Data Summary, regional demographics and why*
 ```{r combined_chunk, Echo=FALSE, include=FALSE}
 # Combining results by winter months for production in the table ig 
 #I did this because I want to filter for this
@@ -108,13 +113,12 @@ read_and_process <- function(url) {
 ```
 
 
-
 ```{r Depression_data, echo=FALSE, include=TRUE}
 
 #This now uses the map_dfr thing to read all the urls and apply the process function so it can occur to all variables
 
 combined_data <- map_dfr(all_urls, read_and_process)
-combined_data
+
 
 # This is used to prepare the plot, unite is used because in the earlier datasets the HBTs are known as 
 # Oooh but at some point I have to change them to healthboard names Chai
@@ -166,12 +170,16 @@ p3
 p4
 
 ```
-*End summary n conclusion, particular healthboards*
+*End summary n conclusion, particular healthboards stand (Glasgow Lothian) and emntion that itys important to account for population and deomgrahic factors*
+
+### Seasonality
+*Could potentialy add a seasonal distribution over recent years to focus on when comparing specific healthboards and SSRI prescriptions later on in the report*
+
 
 ## Total Heart Disease Deaths Over the Last Decade
 
-*Age and sex adjusted death rates per 100,000 population2* 
-
+*potentially make Age and sex adjusted death rates per 100,000 population2* 
+*Data summary, explanations (Data includes coronary heart disease and other types, its totalled for all sexes and ages, just to demonstrate general trend*
 ```{r echo=FALSE, Total_HD_Deaths, echo=FALSE, include=TRUE}
 # The first step is to read in the csv file from the Public Health Scotland Website and using the clean_names function to make its succinct. I have opted for using hyperlinks as this more efficient for my interface.
 # I want to see the general overview and filtering of the data 
@@ -218,9 +226,31 @@ p2 <- filtered_HD_total1 %>%
 
 p1
 p2
-
-
 ```
+
+When usage was high, deaths were high too
+- Although a direct correlation cannot be inferred from this, we can clearly see that the recent rise in cardiac deaths aligns with the increased usage of SSRIs.  
+
+
+## SSRIs Mechanisms and Heart Disease
+Summary with clincal study demonstrating that there is a link between poor mental health and heart disease (Scotland group and Australian Cohort, large percentage of people who experienced cardiac failure had poor mental health, invclude study statistucs). Additionally, the detrimental physiological effect of SSRIs on cardiovascular health (Breifly describe the biological mechanisms). Explanations and why
+
+### SSRI Prescriptions and Heart Disease Mortality by Healthbord at a specific time (2022, November)
+Gt table to demonstrate the differneces between SSRI prescription trends in a healthboard with high deprivation and one with low deprivation SMID(index number). And show SSRI usage per person (using hb_population data) and compare this with heart condition data (try and include standardised format).(This can demonstrate that there is evidence for more deaths where more SSRIs are taken?!?)
+*Gt table should show that in healthboard with more SSRI intake, there's more heart mortality and vice versa for low deprivation*
+*Table will also include demographics of deaths including sex, age. Older population is dying more from heart failure and men too, but this isn't related to depression data (will be clearly stated, just mentioned)*
+
+
+##Discussions
+###Recommendations/Policy/Regaulation
+###Conclusive Remarks and significance of study
+
+
+##Other suggestions
+- Include Metformin usage as well, create a link there as another secondary risk factor
+- Heart disease medication prescriptions and trends, particularly the recent introduction of Anticoagulant. (But this technically hasnt helped as such)
+
+### Ty xx
 
 
 

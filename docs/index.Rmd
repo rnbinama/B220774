@@ -1,6 +1,5 @@
 ---
 title: "Do Heart Disease Mortality Rates Differ When NASSA Prescription Trends Increase?"
-subtitle: "B220774"
 output:
   prettydoc::html_pretty:
     theme: cayman
@@ -10,8 +9,12 @@ output:
     highlight: zenburn
     number_sections: true
     code_folding: show
-fontsize: 11pt
-bibliography: Pract_Bibtex_lol.bib
+fontsize: 8pt
+bibliography: Data.Science.bib
+css: |
+  h1 {
+    font-size: 11px;
+  }
 ---
 
 
@@ -26,21 +29,16 @@ knitr::opts_chunk$set(
 
 
 #### **Introduction**
-Mental health and heart disease are prominent public health challenges within Scotland@. The recent 2022 census revealed that the percentage of individuals reporting mental health conditions, conditions that affect your well-being, increased from 4.4% in 2011 to a staggering 11.3%, denoting the greatest change across all health categories. Heart disease describes the range of conditions impeding heart activity and structure, with coronary heart disease occurring most frequently. Since the early 2000s, cardiovascular disease mortality has reduced, however records depict a recent incline @. 
-The study by @Alot found that individuals with severe mental illness, including schizophrenia, bipolar disorder and sever depression, demonstrated higher risk for cardiovascular disease resulting in premature death. Antidepressants treat multiple mental health conditions, however, the noradrenergic and specific serotonergic antidepressant (NASSA) Mitrazapine is used in the UK as a follow-up treatment if first-line SSRIs fail to work. Therefore, prescription trends can offer valuable insights into depression trends.
-This assessment explores the intersection of NASSA usage and heart disease mortality in Scotland by visualizing trends across health boards and age groups. It initially highlights that general antidepressant prescriptions have risen while in-patient mental health admissions reduced. Additionally, that mortality rates are increasing over time, with variations in NASSA usage across health board regions potentially correlating with increased death rates.
-Without conducting analysis, this report presents a cohesive and detailed overview of the data, offering foundation for future exploration of these critical public health issues.
+###### Mental health and heart disease are prominent public health challenges within Scotland. The recent 2022 census revealed that the percentage of individuals reporting mental health conditions, conditions that affect your well-being, increased from 4.4% in 2011 to a staggering 11.3%, denoting the greatest change across all health categories @noauthor_scotlands_nodate. Heart disease describes the range of conditions impeding heart activity and structure, with coronary heart disease occurring most frequently. Since the early 2000s, cardiovascular disease mortality has reduced, however records depict a recent incline @mccolgan_national_2021. The study @correll_prevalence_2017 found that individuals with severe mental illness, including schizophrenia, bipolar disorder and sever depression, demonstrated higher risk for cardiovascular disease resulting in premature death. Antidepressants treat multiple mental health conditions, however, the noradrenergic and specific serotonergic antidepressant (NASSA) Mitrazapine is used in the UK as a follow-up treatment if first-line SSRIs fail to work @noauthor_overview_2021. Therefore, prescription trends can offer valuable insights into depression trends. This assessment aims to explore the intersection of NASSA usage and heart disease mortality in Scotland by visualising trends across health boards and age groups. It initially highlights that general antidepressant prescriptions have risen while in-patient mental health admissions reduced. Additionally, that mortality rates are increasing over time, with variations in NASSA usage across health board regions potentially correlating with increased death rates. Without conducting analysis, this assessment presents a cohesive and detailed overview of the data, offering foundation for future exploration of these critical public health issues.
 
 #### **Load all packages**
 ```{r Libraries, include=TRUE}
-#All necessary packages are loaded for data import (including csv and shapefiles), data wrangling, plotting, cleaning (go to learn)
-library(prettydoc)
+#All necessary packages are loaded for data import (including csv and shapefiles), data wrangling and plotting
 library(tidyverse) # Manipulating and visualising data
 library(janitor) # Cleaning and standardising data
 library(gt) # Pretty tables
 library(here) # File path finder within project
 library(dplyr) # Additional data manipulation
-library(tinytex) #??
 library(ggtext) # Nice text rendering in ggplot2, which is in tidyverse package
 library(scales) # Scale functions used in visualisation of data
 library(ggthemes) # Provides additional ggplot2 themes
@@ -52,9 +50,9 @@ library(glue) # Interpreting string literals
 #### **Mental Health In-Patient Admissions and Antidepressant Prescription Trends 2015-2023**
 
 ##### Mental Health In-Patient Admission Cases Data Preparation
-The increase in mental health cases in Scotland is accommodated by increased community-based care which includes more prescriptions of antidepressants like Metrazipine, accompanied by a decrease in the in-patient admissions cases for mental health cases. The following plot demonstrate the trends of antidepressant prescriptions and the inpatient admissions in Scotland between 2015 and 2023. *Note that financial year is represented by the second year within the timeframe.
+###### The increase in mental health cases in Scotland is accommodated by increased community-based care which includes more prescriptions of antidepressants like Metrazipine, accompanied by a decrease in the in-patient admissions for mental health cases. The following plot demonstrates the trends of antidepressant prescriptions and the inpatient admissions in Scotland between 2015 and 2023. *Note that financial year is represented by the second year within the timeframe.*
 
-```{r Inpatient Mental Health, echo=TRUE, include=TRUE}
+```{r Inpatient Mental Health, echo=TRUE, include=TRUE, size = "tiny"}
 ### Data Import
 
 #First the open data csv file is read in using tidyverse, a hyperlink sourcing the data is included to ensure information is up-to-date
@@ -83,7 +81,7 @@ Filtered_MH_total <- Mental_health_total %>%
 ```
 
 ##### Antidepressant Data Preparation
-In this next section, the antidepressant data is imported and wrangled before the combined plot can be created. The antidepressants selected include; Mirtazapine, a oradrenaline and specific serotonergic antidepressant (NASSA), Fluoxetine, a selective serotonin reuptake inhibitors (SSRI), Venlafaxine, a serotonin-noradrenaline reuptake inhibitors (SNRIs) and Amitriptyline, a tricyclic antidepressants (TCAs). 
+###### In this next section, the antidepressant data is imported and wrangled before the combined plot can be created. The antidepressants selected include; Mirtazapine, a noradrenaline and specific serotonergic antidepressant (NASSA), Fluoxetine, a selective serotonin reuptake inhibitors (SSRI), Venlafaxine, a serotonin-noradrenaline reuptake inhibitors (SNRIs) and Amitriptyline, a tricyclic antidepressants (TCAs). 
 ```{r AD_Drugs, echo=TRUE, include=TRUE}
 ### Data Import
 
@@ -135,7 +133,7 @@ Clean_ADs_Df <- ADs_Df %>%
 
 
 ##### Healthboard Names Data Preparation 
-This data is imported so health board codes can be represented by names for easiness and tidiness.
+###### This data is imported so health board codes can be represented by names for easiness and tidiness.
 
 ```{r HB, echo=TRUE, include=TRUE}
 ### Data Import
@@ -158,7 +156,7 @@ ADs_HBNames <- full_join(Clean_ADs_Df, HBName_Data, by = c("HB" = "hb")) %>%
 ```
 
 ##### Combined Plot Visualisation
-Data is prepared and tidied, ready for visualising in a combined plot. This line and bar plot demonstrate the trend in in-Patient admission cases and antidepressant usage respectively, from 2015-2023, observe change in antidepressant usage and community-based care.
+###### Data is prepared and tidied, ready for visualising in a combined plot. This line and bar plot demonstrate the trend in in-Patient admission cases and antidepressant prescription respectively, from 2015-2023, observe change in antidepressant usage and community-based care.
 ```{r Combined_AD_MH, echo=TRUE, include=FALSE}
 ### Data Wrangling
 
@@ -168,7 +166,7 @@ Combined_data<- full_join(ADs_HBNames, Filtered_MH_total, by = "Year")
 str(Combined_data)
 ```
 
-```{r Combined_AD_MH1, echo=TRUE, include=TRUE}
+```{r Combined_AD_MH1, echo=TRUE, include=TRUE, fig.width=10, fig.height=6}
 scaling <- 400 #The scaling factor is used to so antidepressant count and in-patient admissions can be displayed on the same plot, normalising the different scales and obtained through trial and error to obtain appropriate scaling. Start by dividing the maximum values of each scale.
 
 
@@ -187,7 +185,7 @@ Combined_plot <- Combined_data %>%
   scale_y_continuous(labels = scales::comma, breaks = scales::pretty_breaks(n = 5),
                      name = "\ Total Count (x10 <sup>7</sup>)", #To ensure reader understands data is scaled down, the <sup> HTML tag creates superscript text.
                      sec.axis = sec_axis(~.*scaling, name = "Mean Inpatient Mental Health Admissions")) + # This creates the secondary axis on the right side of the plot.'~' indicates a formula is defined for transformation, '.' represents primary y-axis values. '*' applies scaling factor
-  labs(title = "Antidepressant Usage and Average Admissions Over Time", x = "Year", fill = "Antidepressant Type")+
+  labs(title = "Antidepressant Prescriptions and Average MH Admissions Over Time", x = "Year", fill = "Antidepressant")+
   scale_x_continuous(labels = waiver(), breaks = seq(min(ADs_HBNames$Year), max(ADs_HBNames$Year), by = 1))+
   scale_fill_viridis_d(option = "mako", direction = -1)+ # Use a viridis color scale for better visibility
   theme_hc()+ #Adds a predefined theme for consistent aesthetics
@@ -201,10 +199,10 @@ Combined_plot
 
 
 ##### Summary 
-Slight decrease in mean admissions, whilst all antidepressant prescription types, during OCT-DEC, have increased, even during the years of the COVID-19 pandemic 2020-2022. From this plot, an increase in the number of antidepressants indicates a decline in mental health in Scotland.
+###### Slight decrease in mean admissions, whilst all antidepressant prescription types, during OCT-DEC, have increased, even during the years of the COVID-19 pandemic 2020-2022. From this plot, an increase in the number of antidepressants indicates a decline in mental health in Scotland.
 
 #### **Heart Disease Mortality Rates 2015-2023**
-In this section, heart disease mortality data is obtained from the same website as the prescriptions in the community: https://www.opendata.nhs.scot/dataset/scottish-heart-disease-statistics. Data is visualised to view the change in the rate of heart disease deaths and what differences occur amoung age groups, during the same period of time antidepressant usage increases.
+###### In this section, heart disease mortality data is obtained from the same website as the prescriptions in the community: https://www.opendata.nhs.scot/dataset/scottish-heart-disease-statistics. Data is visualised to view the change in the rate of heart disease deaths and what differences occur amoung age groups, during the same period of time antidepressant usage increases.
 
 ```{r HD_Plot, echo=TRUE, include=FALSE}
 ### Data Import
@@ -262,10 +260,10 @@ HD_Plot
 
 
 ##### Summary
-General increase in most age groups, least in 0-44 years. End calculation shows 45-64 years had greatest total death increase between 2015 and 2023.
+###### General increase in most age groups, least in 0-44 years. Observation shows 45-64 years had greatest total deaths increase between 2015 and 2022.
 
 #### **Map of Healthboards by Mitrazipine Prescription Per Person in 2019**
-In this section, population data csv file is downloaded and obtained using here(). Data visualisation to view Mitrazipine prescriptions per person differences across Scottish healthvboards. This information will be used to determine if there is a difference in the heart disease mortality statistics when prescriptions are high versus low. The spatial map files are downloaded from this website (https://spatialdata.gov.scot/geonetwork/srv/api/records/f12c3826-4b4b-40e6-bf4f-77b9ed01dc14) and saved into "Shape" folder. Both open datasets were published in 2019.
+###### In this section, population data csv file is downloaded and obtained using here(). Data visualisation to view Mitrazipine prescriptions per person differences across Scottish health boards. This information will be used to determine if there is a difference in the heart disease mortality statistics when prescriptions are high versus low. The spatial map files are downloaded from this website (https://spatialdata.gov.scot/geonetwork/srv/api/records/f12c3826-4b4b-40e6-bf4f-77b9ed01dc14) and saved into "Shape" folder. Both open datasets were published in 2019.
 
 ```{r Healthboard_Mirt_Map, echo=TRUE, include=TRUE}
 ### Data Import
@@ -326,7 +324,7 @@ Spatial_Plot <- Mirtazapine_shape %>%
   scale_fill_viridis_c(name = "Mirtazapine Prescription Ratio", option = "mako") + # Consistent, improved color scale  visibility
   theme_hc() + # Consistent theme as previous plots
   labs(title = "Mirtazapine Prescribed Per Person 2019")+ #Add plot title
-  theme(panel.grid = element_blank())  # Remove grid lines present
+  theme(panel.grid = element_blank(), axis.ticks = element_blank(), axis.text = element_blank(), axis.title = element_blank())  # Remove grid lines present
 
 #View Map Plot
 Spatial_Plot
@@ -335,10 +333,10 @@ Spatial_Plot
 
 
 ##### Summary
-Map observations, show Mirtazapine prescriptions per person is high in 'NHS Ayrshire and Arran' and low in 'NHS Highland', represented by the viridis colour scale. Other higher usage areas include 'NHS Glasgow and Clyde' and 'NHS Lanarkshire', and lower includes 'NHS Lothian'. As Mirtazapine is often reserved as a last line antidepressant, this indicates that depression levels may be greater in these areas.
+###### Map observations, show Mirtazapine prescriptions per person is high in 'NHS Ayrshire and Arran' and low in 'NHS Highland', represented by the viridis colour scale. Other higher usage areas include 'NHS Glasgow and Clyde' and 'NHS Lanarkshire', and lower includes 'NHS Lothian'. As Mirtazapine is often reserved as a last line antidepressant used mainly for depression, this indicates that depression levels may be greater in these areas.
 
 #### **Table of heart disease differences when Mirtazapine prescription is high versus low**
-It is interesting to compare heart disease mortality rates between 'NHS Ayrshire and Arran' with high Mitrazapine prescription per person and 'NHS Highland' with low rates. Both health boards have similar populations, relevant comparison. The accompanying gt table will focus on the 45-64 age group, as they experienced greatest death increase.
+###### It is interesting to compare heart disease mortality rates between 'NHS Ayrshire and Arran' with high Mitrazapine prescription per person and 'NHS Highland' with low rates. Both health boards have similar populations, relevant for comparison. The accompanying gt table will focus on the 45-64 age group, as they experienced greatest death increase.
 
 ```{r HD_Mirt_Table, echo=TRUE, include=TRUE}
 ### Data Wrangling
@@ -385,16 +383,15 @@ HD_Table <- HD_Table_Prep %>%
   # Tab_spanner used to add a title specifically to the columns 'CrudeRate' and 'EASR'.
   tab_spanner(label = "Rate per 100k population", columns = c(CrudeRate, EASR)) %>% 
   tab_style(style = cell_text(color = "red"), locations = cells_row_groups(groups = everything()))%>%
-  tab_options(., container.width = 500, container.height = 500) # for plot display size
+  tab_options(., container.width = 700, container.height = 200) # for plot display size
  
 #View gt Table
 HD_Table
   
 ```
 
-
-
 #### **Discussion**
+###### From the gt table, it's clear to observe that a greater average of combined number of cardivascular deaths occurred in 'NHS Ayrshire and Arran' where Mitrazapine prescription per person rates were also greater. We can also see that men are a lot more likely to die from heart disease complications potentially attributed to hormonal fluctuation and poor lifestyle @mccolgan_national_2021, and that coronary heart disease causes the most deaths and heart failure the least. Visualisations reveal a notable rise in antidepressant prescriptions, including the NASSA Mirtazapine, accompanied by declining inpatient mental health admissions. This suggests a shift toward community-based care, however, the concurrent increase in heart disease mortality raises questions about potential connections between antidepressant usage and cardiovascular outcomes. Regional disparities in prescription trends highlight the influence of local resources and healthcare policies as particular health boards with higher NASSA usage also exhibit elevated heart disease mortality rates. While these patterns are intriguing, it is essential to recognize that causation is not established. Additional factors including socioeconomic status, comorbidities, and post-COVID-19 stressors can potentially contribute to observed trends. The findings support studies that the heart disease mortality risk for individuals with severe mental illness is elevated, demonstrating the need for holistic healthcare strategies that address mental health alongside cardiovascular health. Addressing these interconnected public health challenges remains critical for improving population health outcomes in Scotland. To relay the assessment question, heart disease mortality rates do differ as NASSA prescription increases.
 
-
-
+##### **ChatGPT Declaration**
+###### I used ChatGPT as aid to complete this assessment. I used it to help create the ReadADFiles function for parsing all datasets, to ensure I selected the correct and relevant variables. I also used it to explain errors when creating plots, which guided me in the right direction to improve them effectively.

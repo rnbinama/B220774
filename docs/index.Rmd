@@ -6,7 +6,6 @@ output:
     number_sections: true
     prettydoc::html_pretty:
       theme: cayman
-      toc: yes
     highlight: zenburn
     includes:
   pdf_document: default

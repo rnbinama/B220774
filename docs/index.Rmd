@@ -1,242 +1,409 @@
 ---
-title: 'Exploring Declining Mental Health and Heart Disease Mortality in Scotland:
-  Insights from SSRI Prescription Trends'
+title: "Is Heart Disease Mortality Greaterin Areas Where NSSA Mitrazipine Is Greater?"
 subtitle: B220774
-date: "Today"
 output:
   html_document:
     number_sections: true
+    prettydoc::html_pretty:
+    theme: default
+    highlight: zenburn 
   pdf_document: default
+fontsize: 12pt
 image: C:/Users/natal/Desktop/4th Year Data Science/Assessment/B220774/Heart_gif.gif)
+bibliography: Pract_Bibtex_lol.bib
 ---
+
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(
 	message = FALSE,
-	warning = FALSE,
-	include = FALSE
+	warning = FALSE, 
+	tidy.opts=list(width.cutoff=50), 
+	tidy=TRUE
 )
 ```
 
 
-## Introduction
-Mental health and cardiovascular disease are two of the most pressing public health challenges facing Scotland today, with the recent 2022 census revealing that Mental Health conditions have worsened since 2011. The intricate relationship between these conditions is well-documented, with mental health disorders such as depression and anxiety often acting as both risk factors for and consequences of heart disease. Selective serotonin reuptake inhibitors (SSRIs), widely prescribed for the treatment of mental health disorders, offer valuable insights into trends in mental health management. Meanwhile, heart disease mortality rates provide a way to examine the broader impacts of mental and physical health on public health outcomes.
+## **Introduction**
+Mental health and cardiovascular disease are two of the most pressing public health challenges facing Scotland today, with the recent 2022 census revealing that Mental Health conditions have worsened since 2011. The intricate relationship between these conditions is well-documented, with mental health disorders such as depression and anxiety often acting as both risk factors for and consequences of heart disease. Selective serotonin reuptake inhibitors (SSRIs), widely prescribed for the treatment of mental health disorders, offer valuable insights into trends in mental health management. Meanwhile, heart disease mortality rates provide a way to examine the broader impacts of mental and physical health on public health outcomes.@herman_cell_2014
 
 This assessment explores the intersection of mental health and heart disease mortality in Scotland by visualizing combined trends in SSRI prescriptions for fluoxetine, sertraline, and citalopram. It highlights how mental health and heart disease evolve over time, noting that higher SSRI use in areas of greater socioeconomic deprivation may align with increased heart disease mortality.
 
 Without conducting analysis, this report presents a cohesive and detailed overview of the data, offering foundation for future exploration of these critical public health issues.
 
-
-## SSRI Prescription Trends in Scotland
-The SSRI data represents winter months JAN,FEB,DEC (I may change this though because usage isnt actually highest in the winter as presumed previously)
-
-Load all packages
-```{r Libraries, include=FALSE}
-library(tidyverse)  
-library(janitor) 
-library(gt) 
-library(here) 
-library(kableExtra) 
-library(dplyr) 
-library(readxl) 
-library(patchwork)
+## **Load all packages**
+```{r Libraries, include=TRUE}
+#All necessary packages are loaded for data import (including csv and shapefiles), data wrangling, plotting, cleaning (go to learn)
+library(tidyverse) # Manipulating and visualising data
+library(janitor) # Cleaning and standardising data
+library(gt) # Pretty tables
+library(here) # File path finder within project
+library(dplyr) # Additional data manipulation
+library(tinytex) #??
+library(ggtext) # Nice text rendering in ggplot2, which is in tidyverse package
+library(scales) # Scale functions used in visualisation of data
+library(ggthemes) # Provides additional ggplot2 themes
+library(ggrepel) # Repels text and labels for ggplot2
+library(sf)  # Used for spatial mapping
+library(glue) # Interpreting string literals
 ```
 
-*Data Summary, regional demographics and why*
-```{r combined_chunk, Echo=FALSE, include=FALSE}
-# Combining results by winter months for production in the table ig 
-#I did this because I want to filter for this
+## **Mental Health In-Patient Admissions and Antidepressant Prescription Trends 2015-2023**
 
-Combined16 <- c(
-  "https://www.opendata.nhs.scot/dataset/84393984-14e9-4b0d-a797-b288db64d088/resource/7c487db9-f450-4319-8b18-4b825380692b/download/pitc201601.csv",
-  "https://www.opendata.nhs.scot/dataset/84393984-14e9-4b0d-a797-b288db64d088/resource/0727befa-5530-4c1d-aff0-ccb7554eff7a/download/pitc201602.csv",
-  "https://www.opendata.nhs.scot/dataset/84393984-14e9-4b0d-a797-b288db64d088/resource/597ea4bc-f733-45b6-8a60-5d7a6ac4824c/download/pitc201612.csv"
-  )
+### Mental Health In-Patient Admission Cases Data Preparation
+The increase in mental health cases in Scotland is accommodated by increased community-based care which includes more prescriptions of antidepressants like Metrazipine, accompanied by a decrease in the in-patient admissions cases for mental health cases. The following plot demonstrate the trends of antidepressant prescriptions and the inpatient admissions in Scotland between 2015 and 2023. *Note that financial year is represented by the second year within the timeframe.
 
-Combined17 <- c(
-  "https://www.opendata.nhs.scot/dataset/84393984-14e9-4b0d-a797-b288db64d088/resource/3def845e-c830-4b73-8e02-e42adcde5afa/download/pitc201701.csv",
-  "https://www.opendata.nhs.scot/dataset/84393984-14e9-4b0d-a797-b288db64d088/resource/f7a00faf-49ec-4a99-9686-e52b2d1572c4/download/pitc201702.csv",
-  "https://www.opendata.nhs.scot/dataset/84393984-14e9-4b0d-a797-b288db64d088/resource/a39b254a-ab6a-41d5-a920-5ff34bdb9f6b/download/pitc201712.csv"
-  )
+```{r Inpatient Mental Health, echo=TRUE, include=TRUE}
+### Data Import
 
-Combined18 <- c(
-  "https://www.opendata.nhs.scot/dataset/84393984-14e9-4b0d-a797-b288db64d088/resource/82ef2c55-5a31-4759-ab9a-83b176e107f2/download/pitc201801.csv",
-  "https://www.opendata.nhs.scot/dataset/84393984-14e9-4b0d-a797-b288db64d088/resource/1ae16a5f-aa26-4911-989b-ba4a6ab87037/download/pitc201802.csv",
-  "https://www.opendata.nhs.scot/dataset/84393984-14e9-4b0d-a797-b288db64d088/resource/c50ed972-34e8-4cd6-8d2e-349e875c3ffa/download/pitc201812.csv"
-  )
-
-Combined19 <- c(
-  "https://www.opendata.nhs.scot/dataset/84393984-14e9-4b0d-a797-b288db64d088/resource/3bd6e3cc-b8b7-493b-b6aa-f9fcadbb05d2/download/pitc201901.csv",
-  "https://www.opendata.nhs.scot/dataset/84393984-14e9-4b0d-a797-b288db64d088/resource/3729a5c8-787a-46e3-ab7d-feed9aa91b4e/download/pitc201902.csv",
-  "https://www.opendata.nhs.scot/dataset/84393984-14e9-4b0d-a797-b288db64d088/resource/fa276ad2-669a-472f-9c47-809f199fae21/download/pitc201912.csv"
-  )
-
-Combined20 <- c(
-  "https://www.opendata.nhs.scot/dataset/84393984-14e9-4b0d-a797-b288db64d088/resource/e5c841f2-3e16-428b-97db-0798ec7a5fb4/download/pitc202001.csv",
-  "https://www.opendata.nhs.scot/dataset/84393984-14e9-4b0d-a797-b288db64d088/resource/af121e7c-4124-4955-92e9-a9580ccd469e/download/pitc202002.csv",
-  "https://www.opendata.nhs.scot/dataset/84393984-14e9-4b0d-a797-b288db64d088/resource/0c033702-4d88-4f2d-989c-a709b1f4529e/download/pitc202012.csv"
-  )
-
-Combined21 <- c(
-  "https://www.opendata.nhs.scot/dataset/84393984-14e9-4b0d-a797-b288db64d088/resource/7722a6e6-a6b6-49ec-aa63-fdc4bc727f05/download/pitc202101.csv",
-  "https://www.opendata.nhs.scot/dataset/84393984-14e9-4b0d-a797-b288db64d088/resource/3f5c55ac-1bcd-4c57-a7b6-12911f15239c/download/pitc202102.csv",
-  "https://www.opendata.nhs.scot/dataset/84393984-14e9-4b0d-a797-b288db64d088/resource/ad9e7b46-47fb-4d42-baad-f8e98e8f5936/download/pitc202112.csv"
-  )
-
-Combined22 <- c(
-  "https://www.opendata.nhs.scot/dataset/84393984-14e9-4b0d-a797-b288db64d088/resource/53a53d61-3b3b-4a12-888b-a788ce13db9c/download/pitc202201.csv",
-  "https://www.opendata.nhs.scot/dataset/84393984-14e9-4b0d-a797-b288db64d088/resource/bd7aa5c9-d708-4d0b-9b28-a9d822c84e34/download/pitc202202.csv",
-  "https://www.opendata.nhs.scot/dataset/84393984-14e9-4b0d-a797-b288db64d088/resource/00213ffa-941e-4389-9e6f-3bca8067da8c/download/pitc202212.csv"
-  )
-
-#Combining all the dataframes
-all_urls <- c(Combined16, Combined17, Combined18, Combined19, Combined20, Combined21, Combined22)
+#First the open data csv file is read in using tidyverse, a hyperlink sourcing the data is included to ensure information is up-to-date
+Mental_health_total <- read_csv("https://www.opendata.nhs.scot/dataset/4ace86c2-2c0f-4620-b544-932148c2c4d3/resource/7e99efb9-2d73-46e1-bdce-59b00ed20a0f/download/20231212-mental-health-inpatient-activity-health-board-trend.csv") %>% 
+  clean_names()  # Part of the janitor library, this ensures names of objects are standardised e.g. conversion to lowercase
 ```
 
-```{r SSRI_function, Echo=FALSE, include=FALSE}
+```{r Inpatient Mental Health1, echo=TRUE, include=FALSE}
+# Check for inaccuracies and understand value types for the data I am interested in using. Financial year is a character and should be numeric.
+str(Mental_health_total)
+```
 
-# This is a function created to extract the year and create a column from it
-read_and_process <- function(url) {
-  df <- read_csv(url)
-  year <- str_extract(basename(url), "\\d{4}")
-  if ("bnf_item_description" %in% names(df)) {
-    col_name <- "bnf_item_description"
-  } else if ("BNFItemDescription" %in% names(df)) {
-    col_name <- "BNFItemDescription"
-  } else {
-    stop("Neither 'bnf_item_description' nor 'BNFItemDescription' found in the data")
-  }
-  df %>%
-    filter(str_detect(BNFItemDescription, "FLUOXE|SERTRALINE|CITALOPRAM")) %>%
-    mutate(year = year)
+```{r Inpatient Mental Health2, echo=TRUE, include=TRUE}
+### Data Wrangling
+
+#Next Data is tidied, changing the format
+Filtered_MH_total <- Mental_health_total %>%
+
+#The SMR04 code in the 'dataset' column represents Mental Health case Data in Scotland. Filter for this and the years following 2015
+  filter(dataset == "SMR04", financial_year >="2014/15") %>%  
+#This step renders 'financial_year' column numeric for data visualisation through plots, representation of quantitative data. 'sub()' substitutes characters before and including "/" with "20", then converted to numeric format
+   mutate(financial_year = as.numeric(sub(".*/", "20", financial_year))) %>%
+  select(Year=financial_year, Admissions=number_of_admissions) %>%  # Select required columns for plotting and rename for easy plotting
+  group_by(Year) %>% 
+  summarise(MeanAdmissions = mean(Admissions, na.rm = TRUE)) # Calculate mean admissions per year for standarised measure over time
+```
+
+###Antidepressant Data Preparation
+In this next section, the antidepressant data is imported and wrangled before the combined plot can be created. The antidepressants selected include; Mirtazapine, a oradrenaline and specific serotonergic antidepressant (NASSA), Fluoxetine, a selective serotonin reuptake inhibitors (SSRI), Venlafaxine, a serotonin-noradrenaline reuptake inhibitors (SNRIs) and Amitriptyline, a tricyclic antidepressants (TCAs). 
+```{r AD_Drugs, echo=TRUE, include=TRUE}
+### Data Import
+
+#To import antidepressant prescription information from 2015 to 2023, dataset csv files of the months October, November, December, are downloaded from https://www.opendata.nhs.scot/dataset/prescriptions-in-the-community and added to the folder named "WinterDrugs2015-2023". This is to ensure the time frame of data collected was maximised. Prescription data for 2015 was only available during these months.
+
+# All CSV files listed in the specified directory
+ADFiles <- list.files(here("docs","WinterDrugs2015-2023"), pattern = "csv")
+
+# Function defined to read and process each CSV file cohesively
+ReadADFiles <- function(file_name) {
+  # Extract the year from the file name using lubridate package in tidyverse. This enables plotting with Year as a variable
+  year <- str_extract(file_name, "\\d{4}") %>% as.numeric()
+  # Read the CSV file, process the data add year column
+  data <- read_csv(here("docs","WinterDrugs2015-2023", file_name), show_col_types = FALSE,  col_types = cols(.default = "c")) %>% # Convert all columns to character type to avoid warnings due to inconsistent data types
+    mutate(Year = year, PaidQuantity = as.numeric(PaidQuantity)) %>% # Specifically convert paid quantity to numeric format because the data contains numbers, allows for mathematical operations (e.g sum(), mean())
+#Filter for specific antidepressants
+    filter(str_detect(BNFItemDescription, "MIRTAZAPINE|FLUOXETINE|VENLAFAXINE|AMITRIPTYLINE"),) %>%
+    return(data)
 }
+# This applies the ReadADFiles function to all the CSV files and combines the results, the large amount of data
+ADs_Df <- ADFiles %>%
+  map_dfr(ReadADFiles)
+```
+
+```{r AD_Drugs1, echo=TRUE, include=FALSE}
+#Examine the dataframe structure and check for inaccuracies and value types
+str(ADs_Df)
+# Note, there are two columns depicting the same health board code information but through different years, "HBT2014" and "HBT". This is an inconsistency, they should be consolidated into a single column for further data manipulation 
+```
+
+```{r AD_Drugs2, echo=TRUE, include=TRUE}
+### Data Wrangling
+
+# The data is cleaned again using janitor, and transformed  
+Clean_ADs_Df <- ADs_Df %>%
+# HBT2014 and HBT columns are combined into a new column called HB, prioritising data from the HBT column as this represents the most recent datasets
+  mutate(HB = coalesce(HBT, HBT2014), 
+#Antidepressants are categorised based on BNFItemDescription which is the British National Formulary information on medicines administered in the United Kingdom.
+         Antidepressant = case_when(
+             str_detect(BNFItemDescription, "MIRTAZAPINE") ~ "Mirtazapine(NASSA)",
+             str_detect(BNFItemDescription, "FLUOXETINE") ~ "Fluoxetine(SSRI)",
+             str_detect(BNFItemDescription, "VENLAFAXINE") ~ "Venlafaxine(SNRI)",
+             str_detect(BNFItemDescription, "AMITRIPTYLINE") ~ "Amitriptyline(TCA)",
+             TRUE ~ NA_character_  # Leave as NA if it doesn't match any MH Drug
+           )) %>%  # Create 'hb' from HBT2014 or hbt
+  select(-HBT2014, -HBT, HB, Year, PaidQuantity) %>% # select only relevant columns
+  filter(!is.na(PaidQuantity)) # ensure there are no "NA" cells in the "PaidQuantity" column which is important in preventing inaccuracies in calculations or summaries, this could also lead to incomplete or misleading visualisations
 ```
 
 
-```{r Depression_data, echo=FALSE, include=TRUE}
+###Healthboard Names Data Preparation 
+This data is imported so health board codes can be represented by the actual names for easiness and tidiness.
 
-#This now uses the map_dfr thing to read all the urls and apply the process function so it can occur to all variables
+```{r HB, echo=TRUE, include=TRUE}
+### Import Data
 
-combined_data <- map_dfr(all_urls, read_and_process)
-
-
-# This is used to prepare the plot, unite is used because in the earlier datasets the HBTs are known as 
-# Oooh but at some point I have to change them to healthboard names Chai
-
-combined_plot_prep <- combined_data %>% 
-  unite(HBTNEW, HBT2014, HBT) %>% 
-  select(HBTNEW, BNFItemDescription, PaidQuantity, year) # Selecting for this because 
-
-p3 <- combined_plot_prep %>% 
-  group_by(year) %>% 
-  summarise(total_quantity = sum(PaidQuantity, na.rm = TRUE)) %>%
-  ggplot(aes(x = year, y = total_quantity, group = 1))+
-  geom_line()+
-  scale_y_continuous(labels = scales::comma)+ # To ensure the x axis y a something and its important 
-  geom_point()
-
-
-
-combined_data1 <- combined_data %>% 
-  mutate(HB = coalesce(HBT2014, HBT)) %>%  # Create 'hb' from HBT2014 or hbt
-  select(-HBT2014, -HBT)
-
-healthboard_names_data <- read_csv("https://www.opendata.nhs.scot/dataset/9f942fdb-e59e-44f5-b534-d6e17229cc7b/resource/652ff726-e676-4a20-abda-435b98dd7bdc/download/hb14_hb19.csv") %>% 
+# Hyperlink to ensure efficiency in import and that the data is up-to-date
+HBName_Data <- read_csv("https://www.opendata.nhs.scot/dataset/9f942fdb-e59e-44f5-b534-d6e17229cc7b/resource/652ff726-e676-4a20-abda-435b98dd7bdc/download/hb14_hb19.csv") %>% 
   clean_names()
 
 
-joined_combined_data1 <- full_join(combined_data1, healthboard_names_data, by = c("HB" = "hb"))
+### Data Wrangling 
 
-joined_combined_plot_prep <- joined_combined_data1 %>% 
-  select(hb_name, BNFItemDescription, PaidQuantity, year) %>% 
-  filter(!is.na(hb_name))
+# Join the health board names with antidepressant data frame using health board code depicted in concatenation
+ADs_HBNames <- full_join(Clean_ADs_Df, HBName_Data, by = c("HB" = "hb")) %>% 
+  rename(Healthboard = hb_name,
+         Code = HB,
+         Count = PaidQuantity)%>% # Rename for clarity
+  select(Year, Count, Healthboard, Code, Antidepressant) #Select desired columns for plotting
 
-p4 <- joined_combined_plot_prep %>% 
-  group_by(year, hb_name) %>% 
-  summarise(total_quantity = sum(PaidQuantity, na.rm = TRUE), .groups = "drop") %>%
-  ggplot(aes(x = year, y = total_quantity, group = hb_name, colour = hb_name))+
-  geom_line()+
-  geom_point()+
-  scale_y_continuous(labels = scales::comma)+
-  labs(title = "SSRI Quantity by Health Board 2016-2022",
-       x = "Year",
-       y = "Combined Quantity",
-       colour = "Health Board")+
-  theme_minimal()
+
+```
+
+### Combined Plot Visualisation
+The data have been prepared and tidied, and are ready for visualising in a combined plot. This plot demonstrates the trend in in-Patient admission cases and antidepressant usage from 2015-2023 to show the change in antidepressant usage and community-based care.
+```{r Combined_AD_MH, echo=TRUE, include=FALSE}
+### Data Wrangling
+
+# Use 'full_join' to combine the antidepressants with health board names dataframe and the average mental health in-Patient cases, to ensure no data is lost and format for plotting is correct
+# This also highlights why it's important for the Year variable in 'Filtered_MH_total' to be numeric, so chronological alignment is successful
+Combined_data<- full_join(ADs_HBNames, Filtered_MH_total, by = "Year")
+str(Combined_data)
+```
+
+```{r Combined_AD_MH1, echo=TRUE, include=TRUE}
+scaling <- 400 #The scaling factor is used to so antidepressant count and in-patient admissions can be displayed on the same plot, normalising the different scales and obtained through trial and error to obtain appropriate scaling. Start by dividing the maximum values of each scale.
+
+
+### Data Visualisation
+
+Combined_plot <- Combined_data %>% 
+  group_by(Year, Antidepressant, MeanAdmissions) %>% #
+  summarise(Total_Count = sum(Count, na.rm = TRUE)) %>% # Aggregate data using dplyr to calculate Total_Count as the sum of Count, ignoring NA values for accuracy. This is grouped by Year, Antidepressant and MeanAdmissions to ensure they are included in plot formation
+#Plot is created for visualisation
+  ggplot(aes(x=Year))+ 
+# Stacked bar plot for antipressant Total_Count by year, scaled down for better visualisation
+  geom_col(aes(y=Total_Count/1e7, fill=Antidepressant), width = 0.6) +
+# Line plot for in-Patient Mean admissions, scaled for comparison
+  geom_line(aes(y=MeanAdmissions/scaling), color="black", size=1) +
+#Y axis is customised with labels and breaks
+  scale_y_continuous(labels = scales::comma, breaks = scales::pretty_breaks(n = 5),
+                     name = "\ Total Count (x10 <sup>7</sup>)", #To ensure reader understands data is scaled down, the <sup> HTML tag creates superscript text.
+                     sec.axis = sec_axis(~.*scaling, name = "Mean Inpatient Mental Health Admissions")) + # This creates the secondary axis on the right side of the plot.'~' indicates a formula is defined for transformation, '.' represents primary y-axis values. '*' applies scaling factor
+  labs(title = "Antidepressant Usage and Average Admissions Over Time", x = "Year", fill = "Antidepressant Type")+
+  scale_x_continuous(labels = waiver(), breaks = seq(min(ADs_HBNames$Year), max(ADs_HBNames$Year), by = 1))+
+  scale_fill_viridis_d(name = "Antidepressant",  option = "mako", direction = -1)+ # Use a viridis color scale for better visibility
+  theme_hc()+ #Adds a predifed theme for consistent aesthetics
+  theme(axis.title.y = element_textbox_simple(width = NULL, orientation = 'left-rotated'), panel.grid.major.x = element_blank(), axis.line.y = element_blank(), axis.line = element_line(size=.3, color='black'), panel.grid.major.y = element_line(colour = "grey", size =0.6), axis.ticks = element_blank()) # Theme elements customized for better presentation
+
+
+### View Plot
+Combined_plot
+
+```
+### Summary 
+There has been a slight decrease in the number of in-Patient Mental Health cases, whilst all types of antidepressant prescriptions during OCT-DEC have increased, even during the years of the COVID-19 pandemic, rates continued to increase. From this plot, an increase in the number of antidepressants indicates a decline in mental health in Scotland.
+
+
+## **Heart Disease Mortality Rates 2015-2023**
+In this section, the heart disease mortaility data is obtained from the same website as the prescriptions in the community: https://www.opendata.nhs.scot/dataset/scottish-heart-disease-statistics. Data is visualised to view the change in the rate of heart disease deaths and what differences occur amoung age groups, during the same period of time antidepressant usage is rapidly increasing.
+
+```{r HD_Plot, echo=TRUE, include=FALSE}
+### Data Import
+
+#The open data, csv file is read in using tidyverse, a hyperlink sourcing the data is included to ensure information is up-to-date
+HeartD_mortality <- read_csv("https://www.opendata.nhs.scot/dataset/0e17f3fc-9429-48aa-b1ba-2b7e55688253/resource/dc0512a8-eb49-43b9-84f1-17ef95365d57/download/hd_mortalitybyhbr.csv") %>% 
+  clean_names() %>% # Cleaned for clarity
+  filter(!is.na(number_of_deaths)) # To ensure no NA that'll affect further manipulation
+
+
+### Data Wrangling
+
+# Next, data is filtered for 2015 on wards, and renamed, with appropriate columns selected for plotting.
+filtered_HD_total <- HeartD_mortality %>% 
+  filter(year >= 2015) %>%
+  select(year, hbr, death_count=number_of_deaths, age_group) %>%
+  group_by(year, age_group) %>%
+  summarise(total_deaths = sum(death_count)) #Calculate sum of all deaths per year
+
+str(filtered_HD_total) #age_group is a character and should be a factor for effective visualisation
+```
+
+
+```{r HD_Plot1, echo=TRUE, include=TRUE}
+### Data Visualisation
+
+# Plot is created to visualise heart disease deaths per year, grouped by age group to see if there is a change in rate
+HD_Plot <- filtered_HD_total %>% 
+  mutate(age_group = as.factor(age_group)) %>% # Convert age_group to a factor to ensure 'dplyr' treats it as categorical data
+  ggplot(aes(x=year, y=total_deaths, group = age_group, colour = age_group))+ 
+  geom_point()+ # Adds points for each observation
+  geom_smooth(method=lm)+ # Adds a linear model smooth line to visualize trends
+  facet_wrap(~age_group, nrow = 2, scales ="free_y")+
+  scale_x_continuous(breaks = function(x) seq(floor(min(x)), ceiling(max(x)), by = 1))+ #Create seprate panels for each age group with free y-scales to identify trends that may be obscured when plot is combined as different age groups have different total death ranges
+# Use viridis for discrete colour scale of lines,  'turbo' colour option instead of 'mako' for distinguishable viewing  
+  scale_color_viridis_d(name = "Age group", option = "turbo") +
+  labs(title = "Heart Disease Deaths Per Year in Scotland", x = "Year", y = "Total Deaths")+
+  theme_hc()+
+# Customisations for better representation  
+  theme(
+    axis.title.y = element_textbox_simple(width = NULL, orientation = 'left-rotated'), 
+    panel.grid.major.x = element_blank(), 
+    axis.line.y = element_blank(), 
+    axis.line = element_line(size=.3, color='black'), 
+    panel.grid.major.y = element_line(colour = "grey", size =0.6), 
+    axis.ticks = element_blank(), 
+    axis.text.x = element_text(angle = 45, hjust = 1), # Rotate X-axis for readability
+#Customise facet label for aesthetics
+    strip.background = element_rect(colour = "black", fill = "white", size=0.2, linetype ="solid"),
+strip.text = element_text(size = 10))
+
+#View Plot
+HD_Plot
+
+#Greatest Increase to determine which age_group has increased total heart disease deaths the most
+Greatest_Increase <- filtered_HD_total %>%
+  filter(!age_group %in% c("All", "under75 years")) %>% # First remove these categories as they are too broad and not specific
+  group_by(age_group) %>% # Group data by age to prepare for summarisation
+  summarise(increase = sum(total_deaths[year == max(year)]) - sum(total_deaths[year == min(year)]), .groups = 'drop') %>%# Summarise to calculate the increase by minusing min year count from max, groups are then dropped to return a regular dataframe
+  slice_max(increase, n = 1) #This selects age group with mix increase in deaths
+
+#View Age Group
+Greatest_Increase
+```
+### Summary
+After facet wrapping the heart disease mortality total deaths in a year by age, there has generally been an increase in most age groups, with 0-44 years not altering much. The calculation at the end shows that 45-64 year-olds had the greatest increase in total deaths between 2015 and 2023.
+
+## **Map of Healthboards by Mitrazipine Prescription Per Person in 2019**
+In this section, the population data is downloaded as a csv file and obtained using here(). Data is visualised to view the differences in Mitrazipine prescriptions per person in different healthboards across Scotland. This information will then be used to determine whether there is a difference in the heart disease mortality statistics when prescriptions are high versus low. The spatial map files have been downloaded from this website (https://spatialdata.gov.scot/geonetwork/srv/api/records/f12c3826-4b4b-40e6-bf4f-77b9ed01dc14) and saved into a folder name "Shape". Both open datasets were published in 2019.
+
+```{r Healthboard_Mirt_Map, echo=TRUE, include=TRUE}
+### Data Import
+population_data <- read_csv(here("docs", "UV103_age_health_board_census.csv"), skip = 10) %>% 
+# Rename columns for clarity and tidiness
+  rename(hb_name = "Health Board Area 2019",
+         hb_population = Count) %>% 
+# Filter the data so that we get the population of the entire health board
+  filter(Age == "All people" & Sex == "All people") %>% 
+  select(hb_name, hb_population) %>% # Select only the relevant columns
+  # Change health board names so they match the prescription data
+  mutate(hb_name = paste("NHS", hb_name))
+
+
+# Prepare mirtazapine data from orginal antidepressant dataframe, filtering for results in 2019 to coincide with population and shapefile data
+Mirtazapine_per_head <- ADs_HBNames %>% 
+  filter(Antidepressant == "Mirtazapine(NASSA)",
+         Year == "2019") %>% 
+  select(-Antidepressant, -Year) %>% # Deselect as they are now irrelevant, only one variable present
+  left_join(population_data, by = c("Healthboard" = "hb_name")) %>% #Join with population data to get health board populations
+  group_by(Healthboard, Code) %>%  # Group by health board and healthboard code for summarisation and further manipulation 
+  summarise(
+    TotalCount = sum(Count, na.rm = TRUE),  # Total quantity per health board
+    Ratio = TotalCount / first(hb_population),    # Calculate ratio
+    .groups = "drop"  # Drop grouping after summarising
+  ) %>% 
+  select(Healthboard, Ratio, Code) # Select relevant columns for plotting
+
+```
+
+```{r, echo=TRUE, include=TRUE}
+### Data Import
+
+# Shapefiles regarding health board boundaries, stored in the 'docs' directory within the project, are read in 
+HB_shape <- st_read(here("docs", "Shape"))
+
+
+### Data Wrangling
+
+# The Mirtrazapine prescription data is joined with health board shapes, full join performed to include all healthboards and filter out any with missing names
+# This highlights why health board code was kept as shapefile data does not have health board names
+Mirtazapine_shape<- full_join(HB_shape, Mirtazapine_per_head, by = c("HBCode" = "Code")) %>%
+  filter(!is.na(HBName))
+#GG spatial plot created to show the density of prescriptions per person and how this varies amoungst health boards
+
+### Data Visualisation
+Spatial_Plot <- Mirtazapine_shape %>%
+  ggplot(aes(fill = Ratio)) +  # Map fill color to the prescription ratio 
+  geom_sf(colour = "black", linewidth = 0.2) + #Borders drawn with black lines
+  geom_label_repel(aes(label = HBName, geometry = geometry), 
+                   stat = "sf_coordinates", size = 3, color = "black", fill = "white", 
+                   box.padding = 0.5, max.overlaps = 15) + # Labels added to view health board names in their corresponding locations on the map, in accordance with prescription data availability
+  scale_fill_viridis_c(name = "Mirtazapine Prescription Ratio", option = "mako") + # Consistent, improved color scale  visibility
+  theme_hc() + # Consistent theme as previous plots
+  labs(title = "Mirtazapine Prescribed Per Person 2019")+ #Add plot title
+  coord_sf(label_axes = "---")+ #Removes coordinate labelling
+  theme(
+    axis.text = element_blank(),  # Remove axis text
+    axis.ticks = element_blank(), # Remove axis ticks
+    axis.title = element_blank(), # Remove axis titles
+    panel.grid = element_blank()  # Remove grid lines present
+  )
+
+#View Map Plot
+Spatial_Plot
+
+```
+### Summary
+By observing the map, we can see that Mirtazapine prescription per person is high in 'NHS Ayrshire and Arran' and low in 'NHS Highland', as depicted by the viridis colour scale. Other higher usage areas include 'NHS Glasgow and Clyde' and 'NHS Lanarkshire', and lower includes 'NHS Lothian'. As Mirtazapine is often reserved as a last line antidpressant to patients with severe depression and failed first-line treatment with SSRIs or SNRIs, this indicates that depression levels may be greater in these areas.
+
+## **Table with heart disease differences when Mirtazapine prescription is high and low**
+It is now interesting to determine what differences exist in the statistics regarding heart disease mortality in 'NHS Ayrshire and Arran' with high Mitrazapine prescription per person and 'NHS Highland' with low Mitrazapine prescription per person. Comparison is also encouraged by the fact that the populations of these health boards are similar. The gt table produced in this section will group by the 45-64 years age group as they demonstrated greatest increase in deaths.
+
+```{r HD_Mirt_Table, echo=TRUE, include=TRUE}
+### Data Wrangling
+
+# Heart disease mortality data is prepared for analysis
+HD_Table_Prep <- HeartD_mortality %>%
+  left_join(HBName_Data, by = c("hbr" = "hb")) %>% # Adds readable healthboard names as only codes exist currently
+  left_join(population_data, by = "hb_name") %>% # populations added to calculate rates and understand the context of mortality numbers, for calculating prescriptions per person
+  filter(year == "2019", age_group == "45-64 years", hb_name %in% c("NHS Highland", "NHS Ayrshire and Arran"), sex != "All") %>% # focus on 2019 as population data represents this year, filter for appropriate values and exclude aggregated data for both sexes to enable seperate visualisation
+  select(Sex = sex, Diagnosis = diagnosis, NumberOfDeaths=number_of_deaths, CrudeRate=crude_rate, EASR=easr, Population=hb_population, Healthboard=hb_name)# relevant columns selected
+
+### Data Visualisation
+
+#For the table subtitle, the healthboard names are extracted and stored as values
+Health_Board <- HD_Table_Prep %>% 
+   filter(Healthboard %in% c("NHS Highland", "NHS Ayrshire and Arran")) %>%
+   distinct(Healthboard) %>% 
+   pull(Healthboard)
+
+#Create the table using the gt package
+HD_Table <- HD_Table_Prep %>%
+  group_by(Healthboard, Population) %>% 
+  gt() %>%
+  #Diagnosis and Sex columns reorded to the start for better readability
+  cols_move_to_start(columns = c(Diagnosis, Sex)) %>% 
+  #Healthboard moved after Number of Deaths 
+  cols_move(columns = Sex, after = Diagnosis) %>% 
+  #Rename columns for clarity
+  cols_label(Healthboard = "Health Board",
+             NumberOfDeaths = "Number of Deaths",
+             CrudeRate = "Crude Rate", 
+             EASR = "European Age-Sex Standardised Rate") %>%
+   fmt_percent(columns = c(CrudeRate, EASR), decimals = 0, scale_value = FALSE) %>% #Format percentage columns
+ cols_align(align = "center", columns = NumberOfDeaths) %>% #center-align the 'Number of Deaths' column
+  summary_rows(columns = c(NumberOfDeaths, CrudeRate, EASR), 
+               fns = list("Average" = ~mean(., na.rm = TRUE)), #Summary rows added with averages
+               fmt = list(~ fmt_number(., decimals = 2))) %>%
+  # Add a title and subtitle
+   tab_header(
+       title = "Heart Disease Mortality in 2019 in Adults Aged 45-65 years",
+       
+  # Glue package can be added for the subtitle, and paste the unique values of health board
+       subtitle = glue("Data from {paste(Health_Board, collapse = ' and ')}")) %>%
+  # Tab_spanner used to add a title specifically to the columns 'CrudeRate' and 'EASR'.
+  tab_spanner(label = "Rate per 100k population", columns = c(CrudeRate, EASR)) %>% 
+  tab_style( style = cell_text(color = "red"), locations = cells_row_groups(groups = everything()))
+
+ 
+#View gt Table
+HD_Table
   
-
-p3
-
-p4
-
-```
-*End summary n conclusion, particular healthboards stand (Glasgow Lothian) and emntion that itys important to account for population and deomgrahic factors*
-
-### Seasonality
-*Could potentialy add a seasonal distribution over recent years to focus on when comparing specific healthboards and SSRI prescriptions later on in the report*
-
-
-## Total Heart Disease Deaths Over the Last Decade
-
-*potentially make Age and sex adjusted death rates per 100,000 population2* 
-*Data summary, explanations (Data includes coronary heart disease and other types, its totalled for all sexes and ages, just to demonstrate general trend*
-```{r echo=FALSE, Total_HD_Deaths, echo=FALSE, include=TRUE}
-# The first step is to read in the csv file from the Public Health Scotland Website and using the clean_names function to make its succinct. I have opted for using hyperlinks as this more efficient for my interface.
-# I want to see the general overview and filtering of the data 
-Heart_disease_mortality <- read_csv("https://www.opendata.nhs.scot/dataset/0e17f3fc-9429-48aa-b1ba-2b7e55688253/resource/dc0512a8-eb49-43b9-84f1-17ef95365d57/download/hd_mortalitybyhbr.csv") %>% 
-  clean_names()
-
-# Next, the data is filtered and renamed. I have selected years and dates
-filtered_HD_total <- Heart_disease_mortality %>% 
-  select(year, hbr, number_of_deaths) %>% 
-  filter(!is.na(number_of_deaths)) %>% 
-  group_by(year) %>%
-  summarise(total_deaths = sum(number_of_deaths))
-
-# This creates something
-p1 <- filtered_HD_total %>% 
-  ggplot(aes(x=year, y=total_deaths))+
-  geom_line()+
-  geom_point() +
-  scale_x_continuous(breaks = function(x) seq(floor(min(x)), ceiling(max(x)), by = 1))+
-  labs(title = "Total Heart Disease Deaths Per Year in Scotland", x = "Year", y = "Total Deaths")
-
-
-Heart_disease_mortality1 <- read_csv("https://www.opendata.nhs.scot/dataset/0e17f3fc-9429-48aa-b1ba-2b7e55688253/resource/dc0512a8-eb49-43b9-84f1-17ef95365d57/download/hd_mortalitybyhbr.csv") %>% 
-  clean_names()
-
-HD_with_names <- full_join(Heart_disease_mortality1, healthboard_names_data, by = c("hbr" = "hb")) %>% 
-  filter(!is.na(hb_name))
-
-filtered_HD_total1 <- HD_with_names %>% 
-  select(year, hb_name, number_of_deaths) %>% 
-  filter(!is.na(number_of_deaths)) %>% 
-  group_by(year, hb_name) %>%
-  summarise(total_deaths = sum(number_of_deaths))
-
-
-
-p2 <- filtered_HD_total1 %>% 
-  ggplot(aes(x=year, y=total_deaths, group=hb_name, colour=hb_name))+
-  geom_line()+
-  geom_point() +
-  scale_x_continuous(breaks = function(x) seq(floor(min(x)), ceiling(max(x)), by = 1))+
-  labs(title = "Total Heart Disease Deaths Per Year in Scotland", x = "Year", y = "Total Deaths")
-
-
-p1
-p2
 ```
 
-When usage was high, deaths were high too
-- Although a direct correlation cannot be inferred from this, we can clearly see that the recent rise in cardiac deaths aligns with the increased usage of SSRIs.  
 
 
 ## SSRIs Mechanisms and Heart Disease
 Summary with clincal study demonstrating that there is a link between poor mental health and heart disease (Scotland group and Australian Cohort, large percentage of people who experienced cardiac failure had poor mental health, invclude study statistucs). Additionally, the detrimental physiological effect of SSRIs on cardiovascular health (Breifly describe the biological mechanisms). Explanations and why
 
 ### SSRI Prescriptions and Heart Disease Mortality by Healthbord at a specific time (2022, November)
-Gt table to demonstrate the differneces between SSRI prescription trends in a healthboard with high deprivation and one with low deprivation SMID(index number). And show SSRI usage per person (using hb_population data) and compare this with heart condition data (try and include standardised format).(This can demonstrate that there is evidence for more deaths where more SSRIs are taken?!?)
+Gt table to demonstrate the differences between SSRI prescription trends in a health board with high deprivation and one with low deprivation SMID(index number). And show SSRI usage per person (using hb_population data) and compare this with heart condition data (try and include standardised format).(This can demonstrate that there is evidence for more deaths where more SSRIs are taken?!?)
 *Gt table should show that in healthboard with more SSRI intake, there's more heart mortality and vice versa for low deprivation*
 *Table will also include demographics of deaths including sex, age. Older population is dying more from heart failure and men too, but this isn't related to depression data (will be clearly stated, just mentioned)*
 

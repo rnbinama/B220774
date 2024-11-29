@@ -5,9 +5,8 @@ output:
   html_document:
     number_sections: true
     prettydoc::html_pretty:
-      theme: cayman
+    theme: cosmo
     highlight: zenburn
-    includes:
   pdf_document: default
 fontsize: 12pt
 image: C:/Users/natal/Desktop/4th Year Data Science/Assessment/B220774/Heart_gif.gif)

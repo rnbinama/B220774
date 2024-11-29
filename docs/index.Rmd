@@ -269,6 +269,8 @@ HD_Plot
 
 ```{r Healthboard_Mirt_Map, echo=TRUE, include=TRUE}
 ### Data Import
+
+# Population data downloaded from (https://statistics.ukdataservice.ac.uk/dataset/scotland-s-census-2022-uv302b-general-health-by-age-6-groups/resource/ff57700c-fc01-418e-bcd3-a8f5f3c69ee1) and only represents values recorded in 2019
 population_data <- read_csv(here("docs", "UV103_age_health_board_census.csv"), skip = 10) %>% 
 # Rename columns for clarity and tidiness
   rename(hb_name = "Health Board Area 2019",
